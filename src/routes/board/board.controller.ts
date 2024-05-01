@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
 
@@ -9,6 +9,12 @@ export class BoardController {
   @Post()
   @HttpCode(201)
   create(@Body() createPostRequestDto: CreatePostRequestDto) {
+    return this.boardService.create(createPostRequestDto);
+  }
+
+  @Post('transaction')
+  @HttpCode(HttpStatus.OK)
+  createTransaction(@Body() createPostRequestDto: CreatePostRequestDto) {
     return this.boardService.create(createPostRequestDto);
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-
+import { DataSource } from 'typeorm';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
 import { CategoryService } from '../category/category.service';
 import { HashtagService } from '../hashtag/hashtag.service';
@@ -11,6 +11,7 @@ import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/cre
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
 import { Hashtag, Board, Category } from '../../entities/entity.index';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class BoardService {
@@ -19,10 +20,12 @@ export class BoardService {
     private readonly categoryService: CategoryService,
     private readonly boardToCategoryService: BoardToCategoryService,
     private readonly hashtagToBoardService: HashtagToBoardService,
+    // private readonly dataSource: DataSource,
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
   ) {}
 
+  @Transactional()
   async create(createPostRequestDto: CreatePostRequestDto) {
     const { title, content, categories, hashtags } = createPostRequestDto;
     const newPost = new Board();
@@ -73,4 +76,56 @@ export class BoardService {
     newH2P.hashtags = hashtagArray;
     await this.hashtagToBoardService.createHashtagToBoard(newH2P);
   }
+
+  // async createTransaction(createPostRequestDto: CreatePostRequestDto) {
+  //   const queryRunner = this.dataSource.createQueryRunner();
+  //   await queryRunner.connect();
+  //   await queryRunner.startTransaction();
+  //
+  //   try {
+  //     const { title, content, categories, hashtags } = createPostRequestDto;
+  //     const newPost = new Board();
+  //     newPost.title = title;
+  //     newPost.content = content;
+  //     const post = await queryRunner.manager.save(await this.boardRepository.save(newPost));
+  //
+  //     const categoryArray: Category[] = [];
+  //     for (const category of categories) {
+  //       const checkCategory: Category = await this.categoryService.findOne(category);
+  //       if (checkCategory) {
+  //         categoryArray.push(checkCategory);
+  //       }
+  //       if (!checkCategory) {
+  //         throw new Error('Category not found');
+  //       }
+  //     }
+  //     const newB2C = new CreateBoardCategoryRelationRequestDto();
+  //     newB2C.post = post;
+  //     newB2C.categories = categoryArray;
+  //     await queryRunner.manager.save(await this.boardToCategoryService.createRelation(newB2C));
+  //
+  //     const hashtagArray: Hashtag[] = [];
+  //     for (const hashtag of hashtags) {
+  //       const checkHashtag = await this.hashtagService.findOne(hashtag);
+  //       if (!checkHashtag) {
+  //         const newHashtag = await this.hashtagService.create({ name: hashtag });
+  //         hashtagArray.push(newHashtag);
+  //       }
+  //       if (checkHashtag) {
+  //         hashtagArray.push(checkHashtag);
+  //       }
+  //     }
+  //
+  //     const newH2P = new CreateHashtagBoardRelationRequestDto();
+  //     newH2P.board = post;
+  //     newH2P.hashtags = hashtagArray;
+  //     await queryRunner.manager.save(await this.hashtagToBoardService.createHashtagToBoard(newH2P));
+  //
+  //     await queryRunner.commitTransaction();
+  //   } catch (error) {
+  //     await queryRunner.rollbackTransaction();
+  //   } finally {
+  //     await queryRunner.release();
+  //   }
+  // }
 }
