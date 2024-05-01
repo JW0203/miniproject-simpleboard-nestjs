@@ -7,6 +7,7 @@ import { HashtagModule } from '../hashtag/hashtag.module';
 import { HashtagToBoardModule } from '../hashtag_board/hashtagToBoard.module';
 import { BoardToCategoryModule } from '../board_category/boardToCategory.module';
 import { CategoryModule } from '../category/category.module';
+import { ReplyModule } from '../reply/reply.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CategoryModule } from '../category/category.module';
     HashtagModule,
     BoardToCategoryModule,
     HashtagToBoardModule,
+    ReplyModule,
   ],
   controllers: [BoardController],
   providers: [BoardService],

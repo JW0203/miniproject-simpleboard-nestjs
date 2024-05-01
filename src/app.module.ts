@@ -11,6 +11,7 @@ import { BoardToCategoryModule } from './routes/board_category/boardToCategory.m
 import { HashtagToBoardModule } from './routes/hashtag_board/hashtagToBoard.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { ReplyModule } from './routes/reply/reply.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { DataSource } from 'typeorm';
     BoardToCategoryModule,
     BoardModule,
     HashtagToBoardModule,
+    ReplyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

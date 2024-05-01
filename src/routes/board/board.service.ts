@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
+
 import { CategoryService } from '../category/category.service';
 import { HashtagService } from '../hashtag/hashtag.service';
-
+import { ReplyService } from '../reply/reply.service';
 import { BoardToCategoryService } from '../board_category/boardToCategory.service';
+
 import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/createBoardCategory.relation.request.dto';
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
-import { Hashtag, Board, Category, HashtagToBoard } from '../../entities/entity.index';
+import { Hashtag, Board, Category, Reply } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -20,6 +21,7 @@ export class BoardService {
     private readonly categoryService: CategoryService,
     private readonly boardToCategoryService: BoardToCategoryService,
     private readonly hashtagToBoardService: HashtagToBoardService,
+    private readonly replyService: ReplyService,
     // private readonly dataSource: DataSource,
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
@@ -149,6 +151,48 @@ export class BoardService {
       };
     });
     return posts;
-    // return await this.boardToCategoryService.findBoardByCategoryName(name);
+  }
+
+  async findOne(id: number): Promise<Board> {
+    return this.boardRepository.findOne({
+      where: { id },
+      relations: {
+        boardToCategories: true,
+        replies: true,
+        hashtagToBoards: true,
+      },
+    });
+  }
+
+  async update(id: number, updateRequest: object): Promise<Board> {
+    await this.boardRepository.update({ id: id }, updateRequest);
+    return this.boardRepository.findOne({ where: { id } });
+  }
+
+  @Transactional()
+  async deleteBoard(boardId: number) {
+    const board = await this.boardRepository.findOne({
+      where: { id: boardId },
+      relations: {
+        boardToCategories: true,
+        replies: true,
+        hashtagToBoards: true,
+      },
+    });
+    if (board.boardToCategories.length > 0) {
+      // const boardToCategoriesData = [...board.boardToCategories];
+      // const ids = boardToCategoriesData.map((c) => c.id);
+      const ids = board.boardToCategories.map((c) => c.id);
+      await this.boardToCategoryService.deleteRelation(ids);
+    }
+    if (board.hashtagToBoards.length > 0) {
+      const ids = board.hashtagToBoards.map((c) => c.id);
+      await this.hashtagToBoardService.deleteRelation(ids);
+    }
+    if (board.replies) {
+      const ids = board.replies.map((c) => c.id);
+      await this.replyService.deleteReply(ids);
+    }
+    await this.boardRepository.softDelete(boardId);
   }
 }

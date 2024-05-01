@@ -24,4 +24,8 @@ export class HashtagToBoardService {
   async findAll(): Promise<HashtagToBoard[]> {
     return await this.hashtagToBoardRepository.find();
   }
+
+  async deleteRelation(deleteInfo: number | number[]) {
+    await this.hashtagToBoardRepository.softDelete(deleteInfo);
+  }
 }

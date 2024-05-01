@@ -57,4 +57,8 @@ export class BoardToCategoryService {
       },
     });
   }
+
+  async deleteRelation(deleteInfo: number | number[]) {
+    await this.boardToCategoryRepository.softDelete(deleteInfo);
+  }
 }

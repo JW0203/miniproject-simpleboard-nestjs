@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
 
@@ -27,5 +27,22 @@ export class BoardController {
   @HttpCode(HttpStatus.OK)
   findAll() {
     return this.boardService.findAll();
+  }
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  findOne(@Param('id') id: string) {
+    return this.boardService.findOne(parseInt(id));
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  update(@Param('id') id: string, @Body() updateRequest: object) {
+    return this.boardService.update(parseInt(id), updateRequest);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteBoard(@Param('id') id: string) {
+    return this.boardService.deleteBoard(parseInt(id));
   }
 }
