@@ -15,6 +15,6 @@ export class ReplyController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id') id: string) {
-    return this.replyService.deleteSecificReply(parseInt(id));
+    return this.replyService.deleteSpecificReply(parseInt(id));
   }
 }

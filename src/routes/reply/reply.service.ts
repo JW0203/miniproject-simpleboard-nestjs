@@ -26,12 +26,12 @@ export class ReplyService {
     return await this.replyRepository.save(newReply);
   }
   @Transactional()
-  async deleteSecificReply(id: number) {
+  async deleteSpecificReply(id: number) {
     const foundReply = await this.replyRepository.findOne({ where: { id } });
     if (!foundReply) {
       throw new NotFoundException(`replyId ${id} not found`);
     }
-    await this.replyRepository.softDelete(foundReply);
+    await this.replyRepository.softRemove(foundReply);
   }
 
   @Transactional()
