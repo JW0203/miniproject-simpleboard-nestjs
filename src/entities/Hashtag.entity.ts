@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Timestamps } from './Timestamp.entity';
-import { HashToBoard } from './HashToBoard.entity';
+import { HashtagToBoard } from './HashtagToBoard.entity';
 
 @Entity()
 export class Hashtag extends Timestamps {
@@ -8,6 +8,6 @@ export class Hashtag extends Timestamps {
   id: number;
   @Column()
   name: string;
-  @OneToMany(() => HashToBoard, (hashToBoard) => hashToBoard.hashtag)
-  hashToBoards: HashToBoard[];
+  @OneToMany(() => HashtagToBoard, (hashtagToBoard) => hashtagToBoard.hashtag)
+  public hashtagToBoards: HashtagToBoard[];
 }

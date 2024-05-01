@@ -4,7 +4,7 @@ import { Category } from './Category.entity';
 import { Board } from './Board.entity';
 import { BoardToCategory } from './BoardToCategory.entity';
 import { Hashtag } from './Hashtag.entity';
-import { HashToBoard } from './HashToBoard.entity';
+import { HashtagToBoard } from './HashtagToBoard.entity';
 import { Reply } from './Reply.entity';
 
 @Module({
@@ -13,7 +13,7 @@ import { Reply } from './Reply.entity';
     TypeOrmModule.forFeature([Board]),
     TypeOrmModule.forFeature([BoardToCategory]),
     TypeOrmModule.forFeature([Hashtag]),
-    TypeOrmModule.forFeature([HashToBoard]),
+    TypeOrmModule.forFeature([HashtagToBoard]),
     TypeOrmModule.forFeature([Reply]),
   ],
 })

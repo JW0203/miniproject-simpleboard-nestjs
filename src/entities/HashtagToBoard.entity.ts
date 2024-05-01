@@ -4,11 +4,11 @@ import { Hashtag } from './Hashtag.entity';
 import { Timestamps } from './Timestamp.entity';
 
 @Entity()
-export class HashToBoard extends Timestamps {
+export class HashtagToBoard extends Timestamps {
   @PrimaryGeneratedColumn()
   id: number;
-  @ManyToOne(() => Board, (board) => board.hashToBoards)
+  @ManyToOne(() => Board, (board) => board.id)
   board: Board;
-  @ManyToOne(() => Hashtag, (hashtag) => hashtag.hashToBoards)
+  @ManyToOne(() => Hashtag, (hashtag) => hashtag.id)
   hashtag: Hashtag;
 }
