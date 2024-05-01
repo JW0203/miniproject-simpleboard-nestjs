@@ -28,4 +28,16 @@ export class HashtagToBoardService {
   async deleteRelation(deleteInfo: number | number[]) {
     await this.hashtagToBoardRepository.softDelete(deleteInfo);
   }
+
+  async findBoardByHashtagName(name: string) {
+    return await this.hashtagToBoardRepository.find({
+      relations: {
+        hashtag: true,
+        board: true,
+      },
+      where: {
+        hashtag: { name },
+      },
+    });
+  }
 }

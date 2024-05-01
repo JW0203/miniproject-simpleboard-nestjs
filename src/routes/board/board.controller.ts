@@ -23,6 +23,13 @@ export class BoardController {
   findCategory(@Param('name') name: string) {
     return this.boardService.findBoardByCategory(name);
   }
+
+  @Get('hashtag/:name')
+  @HttpCode(HttpStatus.OK)
+  findHashtag(@Param('name') name: string) {
+    return this.boardService.findBoardByHashtag(name);
+  }
+
   @Get()
   @HttpCode(HttpStatus.OK)
   findAll() {

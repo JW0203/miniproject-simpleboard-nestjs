@@ -153,6 +153,23 @@ export class BoardService {
     return posts;
   }
 
+  async findBoardByHashtag(name: string) {
+    console.log(`name: ${name}`);
+    const hashtag: Hashtag = await this.hashtagService.findOne(name);
+    console.log(hashtag);
+    const result = await this.hashtagToBoardService.findBoardByHashtagName(name);
+    const posts = result.map((post) => {
+      const { id, name } = post.hashtag;
+      delete post.hashtag;
+      return {
+        ...post,
+        hashtagId: id,
+        hashtagName: name,
+      };
+    });
+    return posts;
+  }
+
   async findOne(id: number): Promise<Board> {
     return this.boardRepository.findOne({
       where: { id },
