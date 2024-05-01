@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DataSource } from 'typeorm';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
 import { CategoryService } from '../category/category.service';
@@ -10,7 +10,7 @@ import { BoardToCategoryService } from '../board_category/boardToCategory.servic
 import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/createBoardCategory.relation.request.dto';
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
-import { Hashtag, Board, Category } from '../../entities/entity.index';
+import { Hashtag, Board, Category, HashtagToBoard } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -128,4 +128,27 @@ export class BoardService {
   //     await queryRunner.release();
   //   }
   // }
+
+  async findAll(): Promise<Board[]> {
+    return await this.boardRepository.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async findBoardByCategory(name: string) {
+    // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯
+    console.log(`name: ${name}`);
+    const categories: Category[] = await this.categoryService.findCategories(name);
+    console.log(categories);
+    const result = await this.boardToCategoryService.findBoardByCategoryName(name);
+    const posts = result.map((post) => {
+      const { id, name } = post.category;
+      delete post.category;
+      return {
+        ...post,
+        categoryId: id,
+        categoryName: name,
+      };
+    });
+    return posts;
+    // return await this.boardToCategoryService.findBoardByCategoryName(name);
+  }
 }

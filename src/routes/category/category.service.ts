@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateCategoriesRequestDto } from './dto/createCategory.request.dto';
 import { Category } from '../../entities/Category.entity';
 import { CreateCategoryResponseDto } from './dto/createCategory.response.dto';
@@ -40,5 +40,9 @@ export class CategoryService {
 
   async findOne(name: string): Promise<Category> {
     return await this.categoryRepository.findOne({ where: { name } });
+  }
+
+  async findCategories(name: string): Promise<Category[]> {
+    return await this.categoryRepository.find({ where: { name } });
   }
 }
