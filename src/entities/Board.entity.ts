@@ -19,6 +19,6 @@ export class Board extends Timestamps {
   @OneToMany(() => HashtagToBoard, (hashtagToBoard) => hashtagToBoard.board)
   public hashtagToBoards: HashtagToBoard[];
 
-  @ManyToOne(() => Reply, (reply) => reply.board)
+  @OneToMany(() => Reply, (reply) => reply.board)
   replies: Reply[];
 }
