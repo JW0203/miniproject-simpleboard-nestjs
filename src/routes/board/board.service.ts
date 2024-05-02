@@ -152,9 +152,6 @@ export class BoardService {
     }
 
     const result = await this.hashtagToBoardService.findBoardByHashtagName(name);
-    if (!result) {
-      throw new NotFoundException(`Could not find boards by using hashtag with name ${name}`);
-    }
     const posts = result.map((post) => {
       const { id, name } = post.hashtag;
       delete post.hashtag;
