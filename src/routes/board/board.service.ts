@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
@@ -13,6 +13,7 @@ import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/cre
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
 import { Hashtag, Board, Category } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class BoardService {
@@ -32,6 +33,11 @@ export class BoardService {
     const newPost = new Board();
     newPost.title = title;
     newPost.content = content;
+    const postValidation = await validate(newPost);
+    if (postValidation.length > 0) {
+      throw new BadRequestException(`validation failed. errors: ${postValidation}`);
+    }
+
     const post = await this.boardRepository.save(newPost);
 
     const categoryArray: Category[] = [];

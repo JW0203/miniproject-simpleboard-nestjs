@@ -7,6 +7,7 @@ import { Timestamps } from './Timestamp.entity';
 export class BoardToCategory extends Timestamps {
   @PrimaryGeneratedColumn()
   id: number;
+
   @ManyToOne(() => Board, (board) => board.id)
   board: Board;
   @ManyToOne(() => Category, (category) => category.id)

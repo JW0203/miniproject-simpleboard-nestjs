@@ -3,13 +3,21 @@ import { Timestamps } from './Timestamp.entity';
 import { BoardToCategory } from './BoardToCategory.entity';
 import { HashtagToBoard } from './HashtagToBoard.entity';
 import { Reply } from './Reply.entity';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 @Entity()
 export class Board extends Timestamps {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(10, 20)
   @Column()
   title: string;
+
+  @IsString()
+  @IsNotEmpty()
   @Column()
   content: string;
 
