@@ -35,10 +35,9 @@ export class ReplyService {
   }
 
   @Transactional()
-  async deleteReply(replyIdInfo: number[]) {
-    const foundReplies = await this.replyRepository.find({ where: { id: In(replyIdInfo) } });
-    console.log('----');
-    console.log(foundReplies);
-    await this.replyRepository.softRemove(foundReplies);
+  async deleteReply(ids: number[]) {
+    for (const id of ids) {
+      await this.deleteSpecificReply(id);
+    }
   }
 }
