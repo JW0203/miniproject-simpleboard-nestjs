@@ -10,14 +10,9 @@ export class Board extends Timestamps {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(5, 20)
   @Column()
   title: string;
 
-  @IsString()
-  @IsNotEmpty()
   @Column()
   content: string;
 

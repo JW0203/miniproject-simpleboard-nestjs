@@ -7,7 +7,7 @@ export class ReplyController {
   constructor(private readonly replyService: ReplyService) {}
 
   @Post()
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createReplyRequestDto: CreateReplyRequestDto) {
     return this.replyService.createReply(createReplyRequestDto);
   }

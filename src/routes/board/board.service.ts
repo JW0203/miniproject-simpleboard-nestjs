@@ -31,6 +31,10 @@ export class BoardService {
   @Transactional()
   async create(createPostRequestDto: CreatePostRequestDto) {
     const { title, content, categories, hashtags } = createPostRequestDto;
+    const titleSpace = title.replaceAll(' ', '');
+    if (!titleSpace) {
+      throw new BadRequestException('The title should not be blank spaces');
+    }
 
     const newPost = plainToClass(Board, { title, content });
 

@@ -7,7 +7,7 @@ export class BoardController {
   constructor(private boardService: BoardService) {}
 
   @Post()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   create(@Body() createPostRequestDto: CreatePostRequestDto) {
     return this.boardService.create(createPostRequestDto);
   }
