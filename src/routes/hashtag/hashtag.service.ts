@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Hashtag } from '../../entities/Hashtag.entity';
 import { Repository } from 'typeorm';
@@ -12,10 +12,18 @@ export class HashtagService {
   ) {}
 
   async create(createHashtagRequestDto: CreateHashtagRequestDto) {
-    return this.hashtagRepository.save(createHashtagRequestDto);
+    const { name } = createHashtagRequestDto;
+    await this.findOne(name);
+    const newHashtag = new Hashtag();
+    newHashtag.name = name;
+    return this.hashtagRepository.save(newHashtag);
   }
 
   async findOne(name: string): Promise<Hashtag> {
-    return this.hashtagRepository.findOne({ where: { name: name } });
+    const foundHashtag = await this.hashtagRepository.findOne({ where: { name: name } });
+    if (foundHashtag) {
+      throw new BadRequestException(`Hashtag ${name} already exists`);
+    }
+    return foundHashtag;
   }
 }
