@@ -14,6 +14,7 @@ import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../
 import { Hashtag, Board, Category } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
 import { validate } from 'class-validator';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class BoardService {
@@ -30,9 +31,9 @@ export class BoardService {
   @Transactional()
   async create(createPostRequestDto: CreatePostRequestDto) {
     const { title, content, categories, hashtags } = createPostRequestDto;
-    const newPost = new Board();
-    newPost.title = title;
-    newPost.content = content;
+
+    const newPost = plainToClass(Board, { title, content });
+
     const postValidation = await validate(newPost);
     if (postValidation.length > 0) {
       throw new BadRequestException(`validation failed. errors: ${postValidation}`);

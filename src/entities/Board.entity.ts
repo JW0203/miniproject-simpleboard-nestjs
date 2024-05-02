@@ -12,7 +12,7 @@ export class Board extends Timestamps {
 
   @IsString()
   @IsNotEmpty()
-  @Length(10, 20)
+  @Length(5, 20)
   @Column()
   title: string;
 
