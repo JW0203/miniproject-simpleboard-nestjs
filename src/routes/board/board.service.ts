@@ -22,7 +22,6 @@ export class BoardService {
     private readonly boardToCategoryService: BoardToCategoryService,
     private readonly hashtagToBoardService: HashtagToBoardService,
     private readonly replyService: ReplyService,
-    // private readonly dataSource: DataSource,
     @InjectRepository(Board)
     private readonly boardRepository: Repository<Board>,
   ) {}
@@ -35,7 +34,6 @@ export class BoardService {
     newPost.content = content;
     const post = await this.boardRepository.save(newPost);
 
-    // category가 여러개임
     const categoryArray: Category[] = [];
     for (const category of categories) {
       const checkCategory: Category = await this.categoryService.findOne(category);
@@ -43,23 +41,14 @@ export class BoardService {
         categoryArray.push(checkCategory);
       }
       if (!checkCategory) {
-        // 이 에러를 만들면 아마 transaction 이 안될거다
-        // transaction 을  적용해서 rollback 이 되도록 만들자.
         throw new Error('Category not found');
       }
     }
 
-    //  post 와  category 연결
     const newB2C = new CreateBoardCategoryRelationRequestDto();
     newB2C.post = post;
     newB2C.categories = categoryArray;
     await this.boardToCategoryService.createRelation(newB2C);
-
-    // 여기서 할 것이 아니라 외부에서 해야 할 것 같은데... 함수를 만들까?
-    // hashtagFindAndCreate 로 함수 만들고 return 을 hashtagArray 로 만들자
-    // 하나의 기능을 해야하는데 찾고 만든다??
-    // 1. hashtagFinder => return hashtagArray, newHashtags 이렇게 두개 반환
-    // 2. newHashtags 가지고 새로운 해쉬태그 생성 하고 hashtagArray에 저장
 
     const hashtagArray: Hashtag[] = [];
     for (const hashtag of hashtags) {
@@ -136,7 +125,7 @@ export class BoardService {
   }
 
   async findBoardByCategory(name: string) {
-    // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯
+    // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯 -> In
     console.log(`name: ${name}`);
     const categories: Category[] = await this.categoryService.findCategories(name);
     console.log(categories);
@@ -197,8 +186,6 @@ export class BoardService {
       },
     });
     if (board.boardToCategories.length > 0) {
-      // const boardToCategoriesData = [...board.boardToCategories];
-      // const ids = boardToCategoriesData.map((c) => c.id);
       const ids = board.boardToCategories.map((c) => c.id);
       await this.boardToCategoryService.deleteRelation(ids);
     }

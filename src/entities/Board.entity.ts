@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Timestamps } from './Timestamp.entity';
 import { BoardToCategory } from './BoardToCategory.entity';
 import { HashtagToBoard } from './HashtagToBoard.entity';
