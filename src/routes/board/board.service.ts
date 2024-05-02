@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
@@ -11,7 +11,7 @@ import { BoardToCategoryService } from '../board_category/boardToCategory.servic
 import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/createBoardCategory.relation.request.dto';
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
-import { Hashtag, Board, Category, Reply } from '../../entities/entity.index';
+import { Hashtag, Board, Category } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
@@ -41,7 +41,7 @@ export class BoardService {
         categoryArray.push(checkCategory);
       }
       if (!checkCategory) {
-        throw new Error('Category not found');
+        throw new NotFoundException(`Could not find Category : ${checkCategory}`);
       }
     }
 
@@ -66,6 +66,8 @@ export class BoardService {
     newH2P.board = post;
     newH2P.hashtags = hashtagArray;
     await this.hashtagToBoardService.createHashtagToBoard(newH2P);
+
+    return await this.findOne(post.id);
   }
 
   // async createTransaction(createPostRequestDto: CreatePostRequestDto) {
@@ -126,11 +128,15 @@ export class BoardService {
 
   async findBoardByCategory(name: string) {
     // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯 -> In
-    console.log(`name: ${name}`);
-    const categories: Category[] = await this.categoryService.findCategories(name);
-    console.log(categories);
-    const result = await this.boardToCategoryService.findBoardByCategoryName(name);
-    const posts = result.map((post) => {
+    const foundCategory: Category = await this.categoryService.findOne(name);
+    if (!foundCategory) {
+      throw new NotFoundException(`Could not find category with name ${name}`);
+    }
+    const foundResult = await this.boardToCategoryService.findBoardByCategoryName(name);
+    if (!foundResult) {
+      throw new NotFoundException(`Could not find boards by using category with name ${name}`);
+    }
+    const posts = foundResult.map((post) => {
       const { id, name } = post.category;
       delete post.category;
       return {
@@ -143,10 +149,15 @@ export class BoardService {
   }
 
   async findBoardByHashtag(name: string) {
-    console.log(`name: ${name}`);
-    const hashtag: Hashtag = await this.hashtagService.findOne(name);
-    console.log(hashtag);
+    const foundHashtag: Hashtag = await this.hashtagService.findOne(name);
+    if (!foundHashtag) {
+      throw new NotFoundException(`Could not find hashtag with name ${name}`);
+    }
+
     const result = await this.hashtagToBoardService.findBoardByHashtagName(name);
+    if (!result) {
+      throw new NotFoundException(`Could not find boards by using hashtag with name ${name}`);
+    }
     const posts = result.map((post) => {
       const { id, name } = post.hashtag;
       delete post.hashtag;
@@ -160,7 +171,7 @@ export class BoardService {
   }
 
   async findOne(id: number): Promise<Board> {
-    return this.boardRepository.findOne({
+    const foundPost = this.boardRepository.findOne({
       where: { id },
       relations: {
         boardToCategories: true,
@@ -168,23 +179,25 @@ export class BoardService {
         hashtagToBoards: true,
       },
     });
+    if (!foundPost) {
+      throw new NotFoundException(`Could not find board by id : ${id}`);
+    }
+    return foundPost;
   }
 
   async update(id: number, updateRequest: object): Promise<Board> {
+    const existingPost = await this.boardRepository.findOne({ where: { id } });
+    if (!existingPost) {
+      throw new NotFoundException(`Could not find board with id ${id}`);
+    }
     await this.boardRepository.update({ id: id }, updateRequest);
     return this.boardRepository.findOne({ where: { id } });
   }
 
   @Transactional()
   async deleteBoard(boardId: number) {
-    const board = await this.boardRepository.findOne({
-      where: { id: boardId },
-      relations: {
-        boardToCategories: true,
-        replies: true,
-        hashtagToBoards: true,
-      },
-    });
+    const board = await this.findOne(boardId);
+
     if (board.boardToCategories.length > 0) {
       const ids = board.boardToCategories.map((c) => c.id);
       await this.boardToCategoryService.deleteRelation(ids);
