@@ -133,9 +133,6 @@ export class BoardService {
       throw new NotFoundException(`Could not find category with name ${name}`);
     }
     const foundResult = await this.boardToCategoryService.findBoardByCategoryName(name);
-    if (!foundResult) {
-      throw new NotFoundException(`Could not find boards by using category with name ${name}`);
-    }
     const posts = foundResult.map((post) => {
       const { id, name } = post.category;
       delete post.category;
@@ -200,7 +197,7 @@ export class BoardService {
 
     if (board.boardToCategories.length > 0) {
       const ids = board.boardToCategories.map((c) => c.id);
-      await this.boardToCategoryService.deleteRelation(ids);
+      await this.boardToCategoryService.deleteManyRelations(ids);
     }
     if (board.hashtagToBoards.length > 0) {
       const ids = board.hashtagToBoards.map((c) => c.id);

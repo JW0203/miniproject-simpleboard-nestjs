@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { CreateBoardCategoryRelationRequestDto } from './dto/createBoardCategory.relation.request.dto';
 import { BoardToCategory } from '../../entities/BoardToCategory.entity';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class BoardToCategoryService {
@@ -11,7 +12,7 @@ export class BoardToCategoryService {
     @InjectRepository(BoardToCategory)
     private readonly boardToCategoryRepository: Repository<BoardToCategory>,
   ) {}
-
+  @Transactional()
   async createRelation(createBoardCategoryRelationRequestDto: CreateBoardCategoryRelationRequestDto) {
     const { post, categories } = createBoardCategoryRelationRequestDto;
     for (const category of categories) {
@@ -23,7 +24,7 @@ export class BoardToCategoryService {
   }
 
   async findBoardByCategoryName(name: string) {
-    return this.boardToCategoryRepository.find({
+    const foundResult = await this.boardToCategoryRepository.find({
       relations: { category: true, board: true },
       where: {
         category: {
@@ -31,9 +32,25 @@ export class BoardToCategoryService {
         },
       },
     });
+    if (!foundResult) {
+      throw new NotFoundException(`Could not find boards by using category with name ${name}`);
+    }
+    return foundResult;
   }
 
-  async deleteRelation(deleteInfo: number | number[]) {
-    await this.boardToCategoryRepository.softDelete(deleteInfo);
+  @Transactional()
+  async deleteRelation(id: number) {
+    const foundResult = await this.boardToCategoryRepository.findOne({ where: { id } });
+    if (!foundResult) {
+      throw new NotFoundException(`Could not find "Board To Category relation" with id ${id}`);
+    }
+    await this.boardToCategoryRepository.softRemove(foundResult);
+  }
+
+  @Transactional()
+  async deleteManyRelations(ids: number[]) {
+    for (const id of ids) {
+      await this.deleteRelation(id);
+    }
   }
 }
