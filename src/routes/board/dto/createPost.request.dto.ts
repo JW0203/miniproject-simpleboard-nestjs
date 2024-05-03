@@ -8,6 +8,10 @@ export class CreatePostRequestDto {
   @IsNotEmpty()
   @Length(1, 1000)
   content: string;
+
+  @IsNotEmpty()
   categories: string[];
+
+  @IsNotEmpty()
   hashtags: string[];
 }

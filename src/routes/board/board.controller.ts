@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { CreatePostRequestDto } from './dto/createPost.request.dto';
+import { UpdateRequestDto } from './dto/update.request.dto';
 
 @Controller('boards')
 export class BoardController {
@@ -43,7 +44,7 @@ export class BoardController {
 
   @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  update(@Param('id') id: string, @Body() updateRequest: object) {
+  update(@Param('id') id: string, @Body() updateRequest: UpdateRequestDto) {
     return this.boardService.update(parseInt(id), updateRequest);
   }
 

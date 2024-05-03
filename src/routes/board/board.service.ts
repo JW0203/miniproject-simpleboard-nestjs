@@ -15,6 +15,7 @@ import { Hashtag, Board, Category } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { UpdateRequestDto } from './dto/update.request.dto';
 
 @Injectable()
 export class BoardService {
@@ -81,58 +82,6 @@ export class BoardService {
     return await this.findOne(post.id);
   }
 
-  // async createTransaction(createPostRequestDto: CreatePostRequestDto) {
-  //   const queryRunner = this.dataSource.createQueryRunner();
-  //   await queryRunner.connect();
-  //   await queryRunner.startTransaction();
-  //
-  //   try {
-  //     const { title, content, categories, hashtags } = createPostRequestDto;
-  //     const newPost = new Board();
-  //     newPost.title = title;
-  //     newPost.content = content;
-  //     const post = await queryRunner.manager.save(await this.boardRepository.save(newPost));
-  //
-  //     const categoryArray: Category[] = [];
-  //     for (const category of categories) {
-  //       const checkCategory: Category = await this.categoryService.findOne(category);
-  //       if (checkCategory) {
-  //         categoryArray.push(checkCategory);
-  //       }
-  //       if (!checkCategory) {
-  //         throw new Error('Category not found');
-  //       }
-  //     }
-  //     const newB2C = new CreateBoardCategoryRelationRequestDto();
-  //     newB2C.post = post;
-  //     newB2C.categories = categoryArray;
-  //     await queryRunner.manager.save(await this.boardToCategoryService.createRelation(newB2C));
-  //
-  //     const hashtagArray: Hashtag[] = [];
-  //     for (const hashtag of hashtags) {
-  //       const checkHashtag = await this.hashtagService.findOne(hashtag);
-  //       if (!checkHashtag) {
-  //         const newHashtag = await this.hashtagService.create({ name: hashtag });
-  //         hashtagArray.push(newHashtag);
-  //       }
-  //       if (checkHashtag) {
-  //         hashtagArray.push(checkHashtag);
-  //       }
-  //     }
-  //
-  //     const newH2P = new CreateHashtagBoardRelationRequestDto();
-  //     newH2P.board = post;
-  //     newH2P.hashtags = hashtagArray;
-  //     await queryRunner.manager.save(await this.hashtagToBoardService.createHashtagToBoard(newH2P));
-  //
-  //     await queryRunner.commitTransaction();
-  //   } catch (error) {
-  //     await queryRunner.rollbackTransaction();
-  //   } finally {
-  //     await queryRunner.release();
-  //   }
-  // }
-
   async findAll(): Promise<Board[]> {
     return await this.boardRepository.find({ order: { createdAt: 'DESC' } });
   }
@@ -190,12 +139,13 @@ export class BoardService {
     return foundPost;
   }
 
-  async update(id: number, updateRequest: object): Promise<Board> {
+  async update(id: number, updateRequestDto: UpdateRequestDto): Promise<Board> {
     const existingPost = await this.boardRepository.findOne({ where: { id } });
     if (!existingPost) {
       throw new NotFoundException(`Could not find board with id ${id}`);
     }
-    await this.boardRepository.update({ id: id }, updateRequest);
+
+    await this.boardRepository.update({ id: id }, updateRequestDto);
     return this.boardRepository.findOne({ where: { id } });
   }
 
