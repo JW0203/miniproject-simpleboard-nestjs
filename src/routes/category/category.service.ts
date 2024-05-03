@@ -15,16 +15,16 @@ export class CategoryService {
   async createCategories(createCategoriesRequestDto: CreateCategoriesRequestDto): Promise<Category[]> {
     const { names } = createCategoriesRequestDto;
     const savedCategories = [];
-    for (const category of names) {
-      const existingCategory = await this.categoryRepository.findOne({ where: { name: category.name } });
-      if (!existingCategory) {
-        savedCategories.push(category.name);
-        const newCategory: Category = await this.categoryRepository.save(category);
-        savedCategories.push(new CreateCategoryResponseDto(newCategory.id, newCategory.name));
-      }
+    for (const name of names) {
+      console.log(name);
+      const existingCategory = await this.categoryRepository.findOne({ where: { name } });
+      // 불필요한 if 문
       if (existingCategory) {
-        throw new BadRequestException(`Category name ${category.name} is already exist`);
+        throw new BadRequestException(`Category name ${name} is already exist`);
       }
+      // savedCategories.push(name);
+      const newCategory: Category = await this.categoryRepository.save({ name });
+      savedCategories.push(new CreateCategoryResponseDto(newCategory.id, newCategory.name));
     }
     return savedCategories;
   }

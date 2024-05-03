@@ -2,7 +2,7 @@ import { IsNotEmpty, Length } from 'class-validator';
 
 export class CreatePostRequestDto {
   @IsNotEmpty()
-  @Length(1, 15)
+  @Length(5, 15)
   title: string;
 
   @IsNotEmpty()

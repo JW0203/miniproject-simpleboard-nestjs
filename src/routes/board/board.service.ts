@@ -32,36 +32,28 @@ export class BoardService {
   @Transactional()
   async create(createPostRequestDto: CreatePostRequestDto) {
     const { title, content, categories, hashtags } = createPostRequestDto;
-    const titleSpace = title.replaceAll(' ', '');
-    if (!titleSpace) {
+    const titleWithoutBlank = title.replaceAll(' ', '');
+    if (!titleWithoutBlank) {
       throw new BadRequestException('The title should not be blank spaces');
     }
 
-    const newPost = plainToClass(Board, { title, content });
+    const newBoard = new Board({ title, content });
 
-    //entity에 제한사항을 적었을때 적용가능
-    // const postValidation = await validate(newPost);
-    // if (postValidation.length > 0) {
-    //   throw new BadRequestException(`validation failed. errors: ${postValidation}`);
-    // }
-
-    const post = await this.boardRepository.save(newPost);
+    const board = await this.boardRepository.save(newBoard);
 
     const categoryArray: Category[] = [];
     for (const category of categories) {
       const checkCategory: Category = await this.categoryService.findOne(category);
-      if (checkCategory) {
-        categoryArray.push(checkCategory);
-      }
       if (!checkCategory) {
         throw new NotFoundException(`Could not find Category : ${checkCategory}`);
       }
+      categoryArray.push(checkCategory);
     }
 
-    const newB2C = new CreateBoardCategoryRelationRequestDto();
-    newB2C.post = post;
-    newB2C.categories = categoryArray;
-    await this.boardToCategoryService.createRelation(newB2C);
+    const newBoradToCategoryRelation = new CreateBoardCategoryRelationRequestDto();
+    newBoradToCategoryRelation.post = board;
+    newBoradToCategoryRelation.categories = categoryArray;
+    await this.boardToCategoryService.createRelation(newBoradToCategoryRelation);
 
     const hashtagArray: Hashtag[] = [];
     for (const hashtag of hashtags) {
@@ -70,17 +62,15 @@ export class BoardService {
         const newHashtag = await this.hashtagService.create({ name: hashtag });
         hashtagArray.push(newHashtag);
       }
-      if (checkHashtag) {
-        hashtagArray.push(checkHashtag);
-      }
+      hashtagArray.push(checkHashtag);
     }
 
-    const newH2P = new CreateHashtagBoardRelationRequestDto();
-    newH2P.board = post;
-    newH2P.hashtags = hashtagArray;
-    await this.hashtagToBoardService.createHashtagToBoard(newH2P);
+    const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto();
+    newHashtagToBoardRelation.board = board;
+    newHashtagToBoardRelation.hashtags = hashtagArray;
+    await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation);
 
-    return await this.findOne(post.id);
+    return await this.findOne(board.id);
   }
 
   async findAll(): Promise<Board[]> {
