@@ -152,6 +152,9 @@ export class BoardService {
   @Transactional()
   async deleteBoard(boardId: number) {
     const board = await this.findOne(boardId);
+    if (!board) {
+      throw new NotFoundException(`Could not find board with id ${boardId}`);
+    }
 
     if (board.boardToCategories.length > 0) {
       const ids = board.boardToCategories.map((c) => c.id);
