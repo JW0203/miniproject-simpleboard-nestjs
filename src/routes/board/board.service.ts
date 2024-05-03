@@ -39,10 +39,11 @@ export class BoardService {
 
     const newPost = plainToClass(Board, { title, content });
 
-    const postValidation = await validate(newPost);
-    if (postValidation.length > 0) {
-      throw new BadRequestException(`validation failed. errors: ${postValidation}`);
-    }
+    //entity에 제한사항을 적었을때 적용가능
+    // const postValidation = await validate(newPost);
+    // if (postValidation.length > 0) {
+    //   throw new BadRequestException(`validation failed. errors: ${postValidation}`);
+    // }
 
     const post = await this.boardRepository.save(newPost);
 
@@ -88,10 +89,13 @@ export class BoardService {
 
   async findBoardByCategory(name: string) {
     // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯 -> In
-    const foundCategory: Category = await this.categoryService.findOne(name);
-    if (!foundCategory) {
-      throw new NotFoundException(`Could not find category with name ${name}`);
+    const validKeyword = name.replaceAll(' ', '');
+    if (validKeyword.length < 2) {
+      throw new BadRequestException(` the keyword: ${name} is too short`);
     }
+
+    await this.categoryService.findOne(name);
+
     const foundResult = await this.boardToCategoryService.findBoardByCategoryName(name);
     const posts = foundResult.map((post) => {
       const { id, name } = post.category;
@@ -106,10 +110,12 @@ export class BoardService {
   }
 
   async findBoardByHashtag(name: string) {
-    const foundHashtag: Hashtag = await this.hashtagService.findOne(name);
-    if (!foundHashtag) {
-      throw new NotFoundException(`Could not find hashtag with name ${name}`);
+    const validKeyword = name.replaceAll(' ', '');
+    if (validKeyword.length < 2) {
+      throw new BadRequestException(` the keyword: ${name} is too short`);
     }
+
+    await this.hashtagService.findOne(name);
 
     const result = await this.hashtagToBoardService.findBoardByHashtagName(name);
     const posts = result.map((post) => {
@@ -162,7 +168,7 @@ export class BoardService {
     }
     if (board.hashtagToBoards.length > 0) {
       const ids = board.hashtagToBoards.map((c) => c.id);
-      await this.hashtagToBoardService.deleteRelation(ids);
+      await this.hashtagToBoardService.deleteManyRelation(ids);
     }
     if (board.replies) {
       const ids = board.replies.map((c) => c.id);

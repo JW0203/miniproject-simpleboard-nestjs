@@ -21,8 +21,8 @@ export class HashtagService {
 
   async findOne(name: string): Promise<Hashtag> {
     const foundHashtag = await this.hashtagRepository.findOne({ where: { name: name } });
-    if (foundHashtag) {
-      throw new BadRequestException(`Hashtag ${name} already exists`);
+    if (!foundHashtag) {
+      throw new BadRequestException(`Could not find Hashtag with ${name} `);
     }
     return foundHashtag;
   }

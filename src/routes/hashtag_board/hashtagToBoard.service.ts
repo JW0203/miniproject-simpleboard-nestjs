@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HashtagToBoard } from '../../entities/HashtagToBoard.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateHashtagBoardRelationRequestDto } from './dto/CreateHashtagBoard.relation.request.dto';
 import { Transactional } from 'typeorm-transactional';
 
@@ -28,8 +28,22 @@ export class HashtagToBoardService {
   }
 
   @Transactional()
-  async deleteRelation(deleteInfo: number | number[]) {
-    await this.hashtagToBoardRepository.softDelete(deleteInfo);
+  async deleteRelation(id: number) {
+    const deleteInfo = await this.hashtagToBoardRepository.findOne({ where: { id } });
+
+    if (!deleteInfo) {
+      throw new NotFoundException(`Could not find the Hashtag To Board relation with id ${id}`);
+    }
+    await this.hashtagToBoardRepository.softRemove(deleteInfo);
+  }
+
+  @Transactional()
+  async deleteManyRelation(ids: number[]) {
+    const deleteInfos = await this.hashtagToBoardRepository.find({ where: { id: In(ids) } });
+    await this.hashtagToBoardRepository.softRemove(deleteInfos);
+    // for (const id of ids) {
+    //   await this.deleteRelation(id);
+    // }
   }
 
   async findBoardByHashtagName(name: string) {

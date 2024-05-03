@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 import { CreateBoardCategoryRelationRequestDto } from './dto/createBoardCategory.relation.request.dto';
 import { BoardToCategory } from '../../entities/BoardToCategory.entity';
@@ -49,8 +49,10 @@ export class BoardToCategoryService {
 
   @Transactional()
   async deleteManyRelations(ids: number[]) {
-    for (const id of ids) {
-      await this.deleteRelation(id);
-    }
+    const deleteInfo = await this.boardToCategoryRepository.find({ where: { id: In(ids) } });
+    await this.boardToCategoryRepository.softRemove(deleteInfo);
+    // for (const id of ids) {
+    //   await this.deleteRelation(id);
+    // }
   }
 }
