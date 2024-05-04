@@ -28,14 +28,12 @@ export class Board extends Timestamps {
   constructor();
   constructor(params: { title: string; content: string });
   constructor(params?: { title: string; content: string }) {
-    console.log('생성자 실행');
     super();
-    console.log(params);
-    this.title = params.title;
-    this.content = params.content;
-    // if (params) {
-    //   this.title = params.title;
-    //   this.content = params.content;
-    // }
+    // this.title = params.title;
+    // this.content = params.content;
+    if (params) {
+      this.title = params.title;
+      this.content = params.content;
+    }
   }
 }
