@@ -3,7 +3,6 @@ import { Timestamps } from './Timestamp.entity';
 import { BoardToCategory } from './BoardToCategory.entity';
 import { HashtagToBoard } from './HashtagToBoard.entity';
 import { Reply } from './Reply.entity';
-import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 @Entity()
 export class Board extends Timestamps {
@@ -29,8 +28,6 @@ export class Board extends Timestamps {
   constructor(params: { title: string; content: string });
   constructor(params?: { title: string; content: string }) {
     super();
-    // this.title = params.title;
-    // this.content = params.content;
     if (params) {
       this.title = params.title;
       this.content = params.content;

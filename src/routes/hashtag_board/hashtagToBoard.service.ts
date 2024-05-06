@@ -41,9 +41,6 @@ export class HashtagToBoardService {
   async deleteManyRelation(ids: number[]) {
     const deleteInfos = await this.hashtagToBoardRepository.find({ where: { id: In(ids) } });
     await this.hashtagToBoardRepository.softRemove(deleteInfos);
-    // for (const id of ids) {
-    //   await this.deleteRelation(id);
-    // }
   }
 
   async findBoardByHashtagName(name: string) {

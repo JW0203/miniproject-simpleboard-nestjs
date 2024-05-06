@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board, Reply } from '../../entities/entity.index';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateReplyRequestDto } from './dto/createReply.request.dto';
 import { Transactional } from 'typeorm-transactional';
 

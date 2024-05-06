@@ -18,11 +18,11 @@ export class CategoryService {
     for (const name of names) {
       console.log(name);
       const existingCategory = await this.categoryRepository.findOne({ where: { name } });
-      // 불필요한 if 문
+
       if (existingCategory) {
         throw new BadRequestException(`Category name ${name} is already exist`);
       }
-      // savedCategories.push(name);
+
       const newCategory: Category = await this.categoryRepository.save({ name });
       savedCategories.push(new CreateCategoryResponseDto(newCategory.id, newCategory.name));
     }
@@ -39,11 +39,7 @@ export class CategoryService {
   }
 
   async findOne(name: string): Promise<Category> {
-    const foundCategory = await this.categoryRepository.findOne({ where: { name } });
-    if (!foundCategory) {
-      throw new NotFoundException(`Category with name ${name} not found`);
-    }
-    return foundCategory;
+    return await this.categoryRepository.findOne({ where: { name } });
   }
 
   async findCategories(names: string[]): Promise<Category[]> {

@@ -13,8 +13,6 @@ import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/cre
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
 import { Hashtag, Board, Category } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
-import { validate } from 'class-validator';
-import { plainToClass } from 'class-transformer';
 import { UpdateRequestDto } from './dto/update.request.dto';
 
 @Injectable()
@@ -78,7 +76,6 @@ export class BoardService {
   }
 
   async findBoardByCategory(name: string) {
-    // 여러가지 카테고리 이름을 한번에 매칭 시키는 방법을 찾아야 할듯 -> In
     const validKeyword = name.replaceAll(' ', '');
     if (validKeyword.length < 2) {
       throw new BadRequestException(` the keyword: ${name} is too short`);

@@ -51,8 +51,5 @@ export class BoardToCategoryService {
   async deleteManyRelations(ids: number[]) {
     const deleteInfo = await this.boardToCategoryRepository.find({ where: { id: In(ids) } });
     await this.boardToCategoryRepository.softRemove(deleteInfo);
-    // for (const id of ids) {
-    //   await this.deleteRelation(id);
-    // }
   }
 }
