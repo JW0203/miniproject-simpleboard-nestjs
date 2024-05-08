@@ -3,14 +3,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
-import { EntityModule } from './entities/entity.module';
-import { CategoryModule } from './routes/category/category.module';
-import { BoardModule } from './routes/board/board.module';
-import { HashtagModule } from './routes/hashtag/hashtag.module';
-import { HashtagToBoardModule } from './routes/hashtag_board/hashtagToBoard.module';
+import { EntityModule } from './domain/entities/entity.module';
+import { CategoryModule } from './application/modules/category.module';
+import { BoardModule } from './application/modules/board.module';
+import { HashtagModule } from './application/modules/hashtag.module';
+import { HashtagToBoardModule } from './application/modules/hashtagToBoard.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
-import { ReplyModule } from './routes/reply/reply.module';
+import { ReplyModule } from './application/modules/reply.module';
 
 @Module({
   imports: [
