@@ -10,4 +10,14 @@ export class Reply extends Timestamps {
   text: string;
   @ManyToOne(() => Board, (board) => board.replies)
   board: Board;
+
+  constructor();
+  constructor(params: { text: string; board });
+  constructor(params?: { text: string; board }) {
+    super();
+    if (params) {
+      this.text = params.text;
+      this.board = params.board;
+    }
+  }
 }

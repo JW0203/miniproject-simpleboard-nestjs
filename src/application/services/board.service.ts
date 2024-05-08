@@ -47,18 +47,20 @@ export class BoardService {
       await this.boardRepository.save(newBoard),
     ]);
 
-    const newBoradToCategoryRelation = new CreateBoardCategoryRelationRequestDto();
-    newBoradToCategoryRelation.post = board;
-    newBoradToCategoryRelation.categories = categoryPromiseResult;
+    const newBoradToCategoryRelation = new CreateBoardCategoryRelationRequestDto({
+      board,
+      categoryArray: categoryPromiseResult,
+    });
 
     if (hashtagPromiseResult.notCreatedHashtags.length > 0) {
       const noCreatedHashtags = hashtagPromiseResult.notCreatedHashtags.filter((hashtag) => hashtag.name);
       console.log(noCreatedHashtags);
       throw new Error(`${hashtagPromiseResult.notCreatedHashtags}`);
     }
-    const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto();
-    newHashtagToBoardRelation.board = board;
-    newHashtagToBoardRelation.hashtags = hashtagPromiseResult.Hashtags;
+    const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto({
+      board,
+      hashtagArray: hashtagPromiseResult.Hashtags,
+    });
 
     await Promise.all([
       await this.boardToCategoryService.createRelation(newBoradToCategoryRelation),

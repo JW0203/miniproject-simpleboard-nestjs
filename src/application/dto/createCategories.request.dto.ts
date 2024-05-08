@@ -1,3 +1,3 @@
 export class CreateCategoriesRequestDto {
-  names: string[];
+  categoryNameArray: string[];
 }

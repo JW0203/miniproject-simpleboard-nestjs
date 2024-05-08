@@ -14,12 +14,10 @@ export class HashtagToBoardService {
 
   @Transactional()
   async createHashtagToBoard(createHashtagBoardRelationRequestDto: CreateHashtagBoardRelationRequestDto) {
-    const { board, hashtags } = createHashtagBoardRelationRequestDto;
-    for (const hashtag of hashtags) {
-      const newH2B = new HashtagToBoard();
-      newH2B.hashtag = hashtag;
-      newH2B.board = board;
-      await this.hashtagToBoardRepository.save(newH2B);
+    const { board, hashtagArray } = createHashtagBoardRelationRequestDto;
+    for (const hashtag of hashtagArray) {
+      const newHashtagToBoardRelation = new HashtagToBoard({ board, hashtag });
+      await this.hashtagToBoardRepository.save(newHashtagToBoardRelation);
     }
   }
 

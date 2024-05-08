@@ -11,4 +11,14 @@ export class HashtagToBoard extends Timestamps {
   board: Board;
   @ManyToOne(() => Hashtag, (hashtag) => hashtag.id)
   hashtag: Hashtag;
+
+  constructor();
+  constructor(params: { board: Board; hashtag: Hashtag });
+  constructor(params?: { board: Board; hashtag: Hashtag }) {
+    super();
+    if (params) {
+      this.board = params.board;
+      this.hashtag = params.hashtag;
+    }
+  }
 }

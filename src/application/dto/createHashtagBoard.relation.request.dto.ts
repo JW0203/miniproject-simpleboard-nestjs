@@ -3,5 +3,14 @@ import { Hashtag } from '../../domain/entities/Hashtag.entity';
 
 export class CreateHashtagBoardRelationRequestDto {
   board: Board;
-  hashtags: Hashtag[];
+  hashtagArray: Hashtag[];
+
+  constructor();
+  constructor(params: { board: Board; hashtagArray: Hashtag[] });
+  constructor(params?: { board: Board; hashtagArray: Hashtag[] }) {
+    if (params) {
+      this.board = params.board;
+      this.hashtagArray = params.hashtagArray;
+    }
+  }
 }

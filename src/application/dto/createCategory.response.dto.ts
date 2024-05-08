@@ -1,8 +1,13 @@
 export class CreateCategoryResponseDto {
-  id: number;
-  name: string;
-  constructor(id: number, name: string) {
-    this.id = id;
-    this.name = name;
+  categoryId: number;
+  categoryName: string;
+
+  constructor();
+  constructor(params: { id: number; name: string });
+  constructor(params?: { id: number; name: string }) {
+    if (params) {
+      this.categoryId = params.id;
+      this.categoryName = params.name;
+    }
   }
 }

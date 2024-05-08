@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateCategoriesRequestDto } from '../dto/createCategory.request.dto';
+import { CreateCategoriesRequestDto } from '../dto/createCategories.request.dto';
 import { Category } from '../../domain/entities/Category.entity';
 import { CreateCategoryResponseDto } from '../dto/createCategory.response.dto';
 
@@ -13,10 +13,9 @@ export class CategoryService {
   ) {}
 
   async createCategories(createCategoriesRequestDto: CreateCategoriesRequestDto): Promise<Category[]> {
-    const { names } = createCategoriesRequestDto;
+    const { categoryNameArray } = createCategoriesRequestDto;
     const savedCategories = [];
-    for (const name of names) {
-      console.log(name);
+    for (const name of categoryNameArray) {
       const existingCategory = await this.categoryRepository.findOne({ where: { name } });
 
       if (existingCategory) {
@@ -24,7 +23,7 @@ export class CategoryService {
       }
 
       const newCategory: Category = await this.categoryRepository.save({ name });
-      savedCategories.push(new CreateCategoryResponseDto(newCategory.id, newCategory.name));
+      savedCategories.push(new CreateCategoryResponseDto({ id: newCategory.id, name }));
     }
     return savedCategories;
   }
@@ -33,7 +32,8 @@ export class CategoryService {
     const allCategories = await this.categoryRepository.find();
     const response = [];
     for (const category of allCategories) {
-      response.push(new CreateCategoryResponseDto(category.id, category.name));
+      const { name, id } = category;
+      response.push(new CreateCategoryResponseDto({ id, name }));
     }
     return response;
   }

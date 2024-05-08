@@ -12,4 +12,14 @@ export class BoardToCategory extends Timestamps {
   board: Board;
   @ManyToOne(() => Category, (category) => category.id)
   category: Category;
+
+  constructor();
+  constructor(params: { board: Board; category: Category });
+  constructor(params?: { board: Board; category: Category }) {
+    super();
+    if (params) {
+      this.board = params.board;
+      this.category = params.category;
+    }
+  }
 }

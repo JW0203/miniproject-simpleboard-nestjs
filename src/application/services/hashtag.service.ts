@@ -14,8 +14,8 @@ export class HashtagService {
   async create(createHashtagRequestDto: CreateHashtagRequestDto) {
     const { name } = createHashtagRequestDto;
     await this.findOne(name);
-    const newHashtag = new Hashtag();
-    newHashtag.name = name;
+    const newHashtag = new Hashtag({ name });
+    // newHashtag.name = name;
     return this.hashtagRepository.save(newHashtag);
   }
 

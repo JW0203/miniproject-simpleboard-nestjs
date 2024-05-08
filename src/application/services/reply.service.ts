@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board, Reply } from '../../domain/entities/entity.index';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateReplyRequestDto } from '../dto/createReply.request.dto';
 import { Transactional } from 'typeorm-transactional';
 
@@ -20,9 +20,7 @@ export class ReplyService {
     if (!board) {
       throw new NotFoundException(`boardId ${boardId} not found`);
     }
-    const newReply = new Reply();
-    newReply.text = text;
-    newReply.board = board;
+    const newReply = new Reply({ text, board });
     return await this.replyRepository.save(newReply);
   }
   @Transactional()

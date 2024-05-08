@@ -10,4 +10,13 @@ export class Hashtag extends Timestamps {
   name: string;
   @OneToMany(() => HashtagToBoard, (hashtagToBoard) => hashtagToBoard.hashtag)
   public hashtagToBoards: HashtagToBoard[];
+
+  constructor();
+  constructor(params: { name: string });
+  constructor(params?: { name: string }) {
+    super();
+    if (params) {
+      this.name = params.name;
+    }
+  }
 }
