@@ -6,9 +6,9 @@ import { CreatePostRequestDto } from './dtos/createPost.request.dto';
 import { CategoryService } from '../category/category.service';
 import { HashtagService } from '../hashtag/hashtag.service';
 import { ReplyService } from '../reply/reply.service';
-import { BoardToCategoryService } from '../board_category/boardToCategory.service';
+import { BoardToCategoryService } from './boardToCategory.service';
 
-import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/createBoardCategory.relation.request.dto';
+import { CreateBoardCategoryRelationRequestDto } from './dtos/createBoardCategory.relation.request.dto';
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
 import { Board } from '../../entities/entity.index';

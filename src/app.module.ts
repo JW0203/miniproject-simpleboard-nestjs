@@ -7,7 +7,6 @@ import { EntityModule } from './entities/entity.module';
 import { CategoryModule } from './routes/category/category.module';
 import { BoardModule } from './routes/board/board.module';
 import { HashtagModule } from './routes/hashtag/hashtag.module';
-import { BoardToCategoryModule } from './routes/board_category/boardToCategory.module';
 import { HashtagToBoardModule } from './routes/hashtag_board/hashtagToBoard.module';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
@@ -42,7 +41,6 @@ import { ReplyModule } from './routes/reply/reply.module';
     EntityModule,
     CategoryModule,
     HashtagModule,
-    BoardToCategoryModule,
     BoardModule,
     HashtagToBoardModule,
     ReplyModule,

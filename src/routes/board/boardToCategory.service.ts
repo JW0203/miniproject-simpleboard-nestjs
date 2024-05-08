@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
-import { CreateBoardCategoryRelationRequestDto } from './dto/createBoardCategory.relation.request.dto';
+import { CreateBoardCategoryRelationRequestDto } from './dtos/createBoardCategory.relation.request.dto';
 import { BoardToCategory } from '../../entities/BoardToCategory.entity';
 import { Transactional } from 'typeorm-transactional';
 

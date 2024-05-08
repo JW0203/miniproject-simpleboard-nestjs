@@ -1,5 +1,5 @@
 import { Board } from '../../../entities/Board.entity';
-import { BoardToCategoryService } from '../../board_category/boardToCategory.service';
+import { BoardToCategoryService } from '../boardToCategory.service';
 import { HashtagToBoardService } from '../../hashtag_board/hashtagToBoard.service';
 import { ReplyService } from '../../reply/reply.service';
 
