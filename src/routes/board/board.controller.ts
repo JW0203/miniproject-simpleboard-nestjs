@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { BoardService } from './board.service';
-import { CreatePostRequestDto } from './dto/createPost.request.dto';
-import { UpdateRequestDto } from './dto/update.request.dto';
+import { CreatePostRequestDto } from './dtos/createPost.request.dto';
+import { UpdateRequestDto } from './dtos/update.request.dto';
 
 @Controller('boards')
 export class BoardController {
@@ -15,8 +15,8 @@ export class BoardController {
 
   @Get('category/:name')
   @HttpCode(HttpStatus.OK)
-  findCategory(@Param('name') name: string) {
-    return this.boardService.findBoardByCategory(name);
+  findCategory(@Param('id') id: number) {
+    return this.boardService.findBoardByCategory(id);
   }
 
   @Get('hashtag/:name')

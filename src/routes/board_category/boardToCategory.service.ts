@@ -23,17 +23,17 @@ export class BoardToCategoryService {
     }
   }
 
-  async findBoardByCategoryName(name: string) {
+  async findBoardByCategoryName(id: number) {
     const foundResult = await this.boardToCategoryRepository.find({
       relations: { category: true, board: true },
       where: {
         category: {
-          name: name,
+          id,
         },
       },
     });
     if (!foundResult) {
-      throw new NotFoundException(`Could not find boards by using category with name ${name}`);
+      throw new NotFoundException(`Could not find boards by using category with id ${id}`);
     }
     return foundResult;
   }
@@ -48,7 +48,7 @@ export class BoardToCategoryService {
   }
 
   @Transactional()
-  async deleteManyRelations(ids: number[]) {
+  async deleteManyRelations(ids: number[]): Promise<void> {
     const deleteInfo = await this.boardToCategoryRepository.find({ where: { id: In(ids) } });
     await this.boardToCategoryRepository.softRemove(deleteInfo);
   }

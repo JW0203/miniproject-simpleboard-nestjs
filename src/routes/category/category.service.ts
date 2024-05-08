@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateCategoriesRequestDto } from './dto/createCategory.request.dto';
 import { Category } from '../../entities/Category.entity';
 import { CreateCategoryResponseDto } from './dto/createCategory.response.dto';
@@ -38,11 +38,17 @@ export class CategoryService {
     return response;
   }
 
-  async findOne(name: string): Promise<Category> {
-    return await this.categoryRepository.findOne({ where: { name } });
+  async findOne(id: number): Promise<Category> {
+    return await this.categoryRepository.findOne({ where: { id } });
   }
 
-  async findCategories(names: string[]): Promise<Category[]> {
-    return await this.categoryRepository.find({ where: { name: In(names) } });
+  async findCategories(ids: number[]): Promise<Category[]> {
+    const categoryList: Category[] = [];
+    await Promise.allSettled(ids.map((id) => this.findOne(id))).then((results) => {
+      results.forEach((result) => {
+        categoryList.push(result['value']);
+      });
+    });
+    return categoryList;
   }
 }

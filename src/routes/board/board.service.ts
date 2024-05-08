@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatePostRequestDto } from './dto/createPost.request.dto';
+import { CreatePostRequestDto } from './dtos/createPost.request.dto';
 
 import { CategoryService } from '../category/category.service';
 import { HashtagService } from '../hashtag/hashtag.service';
@@ -11,9 +11,10 @@ import { BoardToCategoryService } from '../board_category/boardToCategory.servic
 import { CreateBoardCategoryRelationRequestDto } from '../board_category/dto/createBoardCategory.relation.request.dto';
 
 import { CreateHashtagBoardRelationRequestDto, HashtagToBoardService } from '../hashtag_board/hashtagToBoard.index';
-import { Hashtag, Board, Category } from '../../entities/entity.index';
+import { Board } from '../../entities/entity.index';
 import { Transactional } from 'typeorm-transactional';
-import { UpdateRequestDto } from './dto/update.request.dto';
+import { UpdateRequestDto } from './dtos/update.request.dto';
+import { makeCategoryArray, deleteBoardRelations, makeHashtagArray } from './functions';
 
 @Injectable()
 export class BoardService {
@@ -29,7 +30,8 @@ export class BoardService {
 
   @Transactional()
   async create(createPostRequestDto: CreatePostRequestDto) {
-    const { title, content, categories, hashtags } = createPostRequestDto;
+    const { title, content, categoryIds, hashtags } = createPostRequestDto;
+    console.log(title);
     const titleWithoutBlank = title.replaceAll(' ', '');
     if (!titleWithoutBlank) {
       throw new BadRequestException('The title should not be blank spaces');
@@ -37,53 +39,50 @@ export class BoardService {
 
     const newBoard = new Board({ title, content });
 
-    const board = await this.boardRepository.save(newBoard);
-
-    const categoryArray: Category[] = [];
-    for (const category of categories) {
-      const checkCategory: Category = await this.categoryService.findOne(category);
-      if (!checkCategory) {
-        throw new NotFoundException(`Could not find Category : ${checkCategory}`);
-      }
-      categoryArray.push(checkCategory);
-    }
+    const [categoryPromiseResult, hashtagPromiseResult, board] = await Promise.all([
+      makeCategoryArray(categoryIds, this.categoryService),
+      makeHashtagArray(hashtags, this.hashtagService),
+      await this.boardRepository.save(newBoard),
+    ]);
 
     const newBoradToCategoryRelation = new CreateBoardCategoryRelationRequestDto();
     newBoradToCategoryRelation.post = board;
-    newBoradToCategoryRelation.categories = categoryArray;
-    await this.boardToCategoryService.createRelation(newBoradToCategoryRelation);
+    newBoradToCategoryRelation.categories = categoryPromiseResult;
 
-    const hashtagArray: Hashtag[] = [];
-    for (const hashtag of hashtags) {
-      const checkHashtag = await this.hashtagService.findOne(hashtag);
-      if (!checkHashtag) {
-        const newHashtag = await this.hashtagService.create({ name: hashtag });
-        hashtagArray.push(newHashtag);
-      }
-      hashtagArray.push(checkHashtag);
+    if (hashtagPromiseResult.notCreatedHashtags.length > 0) {
+      const noCreatedHashtags = hashtagPromiseResult.notCreatedHashtags.filter((hashtag) => hashtag.name);
+      console.log(noCreatedHashtags);
+      throw new Error(`${hashtagPromiseResult.notCreatedHashtags}`);
     }
-
     const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto();
     newHashtagToBoardRelation.board = board;
-    newHashtagToBoardRelation.hashtags = hashtagArray;
-    await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation);
+    newHashtagToBoardRelation.hashtags = hashtagPromiseResult.Hashtags;
 
-    return await this.findOne(board.id);
+    await Promise.all([
+      await this.boardToCategoryService.createRelation(newBoradToCategoryRelation),
+      await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation),
+    ]);
+
+    const post = await this.findOne(board.id);
+    const boardToCategoriesIds = post.boardToCategories.map((relation) => relation.id);
+    const hashtagToBoardsIds = post.hashtagToBoards.map((relation) => relation.id);
+    delete post.boardToCategories;
+    delete post.hashtagToBoards;
+    return {
+      ...post,
+      boardToCategoriesIds,
+      hashtagToBoardsIds,
+    };
   }
 
   async findAll(): Promise<Board[]> {
     return await this.boardRepository.find({ order: { createdAt: 'DESC' } });
   }
 
-  async findBoardByCategory(name: string) {
-    const validKeyword = name.replaceAll(' ', '');
-    if (validKeyword.length < 2) {
-      throw new BadRequestException(` the keyword: ${name} is too short`);
-    }
+  async findBoardByCategory(id: number) {
+    await this.categoryService.findOne(id);
 
-    await this.categoryService.findOne(name);
-
-    const foundResult = await this.boardToCategoryService.findBoardByCategoryName(name);
+    const foundResult = await this.boardToCategoryService.findBoardByCategoryName(id);
     const posts = foundResult.map((post) => {
       const { id, name } = post.category;
       delete post.category;
@@ -117,8 +116,8 @@ export class BoardService {
     return posts;
   }
 
-  async findOne(id: number): Promise<Board> {
-    const foundPost = this.boardRepository.findOne({
+  async findOne(id: number) {
+    const foundPost = await this.boardRepository.findOne({
       where: { id },
       relations: {
         boardToCategories: true,
@@ -126,9 +125,11 @@ export class BoardService {
         hashtagToBoards: true,
       },
     });
+
     if (!foundPost) {
       throw new NotFoundException(`Could not find board by id : ${id}`);
     }
+
     return foundPost;
   }
 
@@ -149,18 +150,14 @@ export class BoardService {
       throw new NotFoundException(`Could not find board with id ${boardId}`);
     }
 
-    if (board.boardToCategories.length > 0) {
-      const ids = board.boardToCategories.map((c) => c.id);
-      await this.boardToCategoryService.deleteManyRelations(ids);
-    }
-    if (board.hashtagToBoards.length > 0) {
-      const ids = board.hashtagToBoards.map((c) => c.id);
-      await this.hashtagToBoardService.deleteManyRelation(ids);
-    }
-    if (board.replies) {
-      const ids = board.replies.map((c) => c.id);
-      await this.replyService.deleteReply(ids);
-    }
+    const iterableInputs = deleteBoardRelations({
+      board,
+      boardToCategoryService: this.boardToCategoryService,
+      hashtagToBoardService: this.hashtagToBoardService,
+      replyService: this.replyService,
+    });
+
+    await Promise.all(iterableInputs);
     await this.boardRepository.softDelete(boardId);
   }
 }

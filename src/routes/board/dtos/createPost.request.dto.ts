@@ -10,7 +10,7 @@ export class CreatePostRequestDto {
   content: string;
 
   @IsNotEmpty()
-  categories: string[];
+  categoryIds: number[];
 
   @IsNotEmpty()
   hashtags: string[];

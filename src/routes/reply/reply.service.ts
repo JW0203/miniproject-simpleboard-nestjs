@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Board, Reply } from '../../entities/entity.index';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateReplyRequestDto } from './dto/createReply.request.dto';
 import { Transactional } from 'typeorm-transactional';
 
@@ -28,9 +28,6 @@ export class ReplyService {
   @Transactional()
   async deleteSpecificReply(id: number) {
     const foundReply = await this.replyRepository.findOne({ where: { id } });
-    if (!foundReply) {
-      throw new NotFoundException(`replyId ${id} not found`);
-    }
     await this.replyRepository.softRemove(foundReply);
   }
 

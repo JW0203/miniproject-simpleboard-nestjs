@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Hashtag } from '../../entities/Hashtag.entity';
 import { Repository } from 'typeorm';
@@ -21,5 +21,16 @@ export class HashtagService {
 
   async findOne(name: string): Promise<Hashtag> {
     return await this.hashtagRepository.findOne({ where: { name: name } });
+  }
+
+  async findHashtags(names: string[]): Promise<Hashtag[]> {
+    const hashtagList: Hashtag[] = [];
+    await Promise.allSettled(names.map((name) => this.findOne(name))).then((results) => {
+      results.forEach((result) => {
+        hashtagList.push(result['value']);
+      });
+    });
+
+    return hashtagList;
   }
 }
