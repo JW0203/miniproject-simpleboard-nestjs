@@ -15,11 +15,12 @@ export class BoardToCategoryService {
   @Transactional()
   async createRelation(createBoardCategoryRelationRequestDto: CreateBoardCategoryRelationRequestDto) {
     const { board, categoryArray } = createBoardCategoryRelationRequestDto;
-    for (const category of categoryArray) {
-      const newBoardToCategoryRelation = new BoardToCategory({ category, board });
-
-      await this.boardToCategoryRepository.save(newBoardToCategoryRelation);
-    }
+    await Promise.all(
+      categoryArray.map(async (category) => {
+        const newBoardToCategoryRelation = new BoardToCategory({ category, board });
+        await this.boardToCategoryRepository.save(newBoardToCategoryRelation);
+      }),
+    );
   }
 
   async findBoardByCategoryName(id: number) {
