@@ -16,7 +16,7 @@ import { HashtagToBoardService } from './hashtagToBoard.service';
 
 import { Board } from '../../domain/entities/entity.index';
 
-import { makeCategoryArray, deleteBoardRelations, makeHashtagArray } from '../functions';
+import { deleteBoardRelations, makeHashtagArrayByName } from '../functions';
 
 @Injectable()
 export class BoardService {
@@ -32,51 +32,63 @@ export class BoardService {
 
   @Transactional()
   async create(createBoardRequestDto: CreateBoardRequestDto) {
-    const { title, content, categoryIds, hashtags } = createBoardRequestDto;
-    console.log(title);
-    const titleWithoutBlank = title.replaceAll(' ', '');
-    if (!titleWithoutBlank) {
-      throw new BadRequestException('The title should not be blank spaces');
+    try {
+      const { title, content, categoryIds, hashtags } = createBoardRequestDto;
+
+      const titleWithoutBlank = title.replaceAll(' ', '');
+      if (!titleWithoutBlank) {
+        throw new BadRequestException('The title should not be blank spaces');
+      }
+
+      const newBoard = new Board({ title, content });
+
+      const [categoryPromiseResult, hashtagPromiseResult, board] = await Promise.all([
+        // makeCategoryArrayByIds(categoryIds, this.categoryService),
+        await this.categoryService.findCategories(categoryIds),
+        makeHashtagArrayByName(hashtags, this.hashtagService),
+        await this.boardRepository.save(newBoard),
+      ]);
+
+      for (const i in categoryPromiseResult) {
+        if (categoryPromiseResult[i] === null) {
+          throw new NotFoundException(`Could not find Category using id: ${categoryIds[i]}`);
+        }
+      }
+
+      // if (hashtagPromiseResult.notCreatedHashtags.length > 0) {
+      //   const noCreatedHashtags = hashtagPromiseResult.notCreatedHashtags.filter((hashtag) => hashtag.name);
+      //   console.log(noCreatedHashtags);
+      //   throw new Error(`${hashtagPromiseResult.notCreatedHashtags}`);
+      // }
+
+      const newBoardToCategoryRelation = new CreateBoardCategoryRelationRequestDto({
+        board,
+        categoryArray: categoryPromiseResult,
+      });
+
+      const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto({
+        board,
+        hashtagArray: hashtagPromiseResult.Hashtags,
+      });
+
+      await Promise.all([
+        await this.boardToCategoryService.createRelation(newBoardToCategoryRelation),
+        await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation),
+      ]);
+
+      const foundNewBoard = await this.findOne(board.id);
+      const boardToCategoriesIds = foundNewBoard.boardToCategories.map((relation) => relation.id);
+      const hashtagToBoardsIds = foundNewBoard.hashtagToBoards.map((relation) => relation.id);
+      delete foundNewBoard.boardToCategories;
+      delete foundNewBoard.hashtagToBoards;
+      return {
+        ...foundNewBoard,
+        boardToCategoriesIds,
+        hashtagToBoardsIds,
+      };
+    } catch (error) {
+      return error;
     }
-
-    const newBoard = new Board({ title, content });
-
-    const [categoryPromiseResult, hashtagPromiseResult, board] = await Promise.all([
-      makeCategoryArray(categoryIds, this.categoryService),
-      makeHashtagArray(hashtags, this.hashtagService),
-      await this.boardRepository.save(newBoard),
-    ]);
-
-    const newBoradToCategoryRelation = new CreateBoardCategoryRelationRequestDto({
-      board,
-      categoryArray: categoryPromiseResult,
-    });
-
-    if (hashtagPromiseResult.notCreatedHashtags.length > 0) {
-      const noCreatedHashtags = hashtagPromiseResult.notCreatedHashtags.filter((hashtag) => hashtag.name);
-      console.log(noCreatedHashtags);
-      throw new Error(`${hashtagPromiseResult.notCreatedHashtags}`);
-    }
-    const newHashtagToBoardRelation = new CreateHashtagBoardRelationRequestDto({
-      board,
-      hashtagArray: hashtagPromiseResult.Hashtags,
-    });
-
-    await Promise.all([
-      await this.boardToCategoryService.createRelation(newBoradToCategoryRelation),
-      await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation),
-    ]);
-
-    const foundBoard = await this.findOne(board.id);
-    const boardToCategoriesIds = foundBoard.boardToCategories.map((relation) => relation.id);
-    const hashtagToBoardsIds = foundBoard.hashtagToBoards.map((relation) => relation.id);
-    delete foundBoard.boardToCategories;
-    delete foundBoard.hashtagToBoards;
-    return {
-      ...foundBoard,
-      boardToCategoriesIds,
-      hashtagToBoardsIds,
-    };
   }
 
   async findAll(): Promise<Board[]> {

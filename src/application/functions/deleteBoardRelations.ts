@@ -1,4 +1,3 @@
-import { Board } from '../../domain/entities/Board.entity';
 import { BoardToCategoryService } from '../services/boardToCategory.service';
 import { HashtagToBoardService } from '../services/hashtagToBoard.service';
 import { ReplyService } from '../services/reply.service';

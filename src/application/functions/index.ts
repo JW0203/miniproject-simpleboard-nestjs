@@ -1,5 +1,4 @@
-import { makeCategoryArray } from './makeCategoryArray';
 import { deleteBoardRelations } from './deleteBoardRelations';
-import { makeHashtagArray } from './makeHashtagArray';
+import { makeHashtagArrayByName } from './makeHashtagArray';
 
-export { makeCategoryArray, deleteBoardRelations, makeHashtagArray };
+export { deleteBoardRelations, makeHashtagArrayByName };
