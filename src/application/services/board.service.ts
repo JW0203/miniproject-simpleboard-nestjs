@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
-import { CreatePostRequestDto } from '../dto/createPost.request.dto';
+import { CreateBoardRequestDto } from '../dto/createBoard.request.dto';
 import { UpdateBoardRequestDto } from '../dto/updateBoard.request.dto';
 import { CreateHashtagBoardRelationRequestDto } from '../dto/createHashtagBoard.relation.request.dto';
 import { CreateBoardCategoryRelationRequestDto } from '../dto/createBoardCategory.relation.request.dto';
@@ -31,8 +31,8 @@ export class BoardService {
   ) {}
 
   @Transactional()
-  async create(createPostRequestDto: CreatePostRequestDto) {
-    const { title, content, categoryIds, hashtags } = createPostRequestDto;
+  async create(createBoardRequestDto: CreateBoardRequestDto) {
+    const { title, content, categoryIds, hashtags } = createBoardRequestDto;
     console.log(title);
     const titleWithoutBlank = title.replaceAll(' ', '');
     if (!titleWithoutBlank) {
@@ -67,13 +67,13 @@ export class BoardService {
       await this.hashtagToBoardService.createHashtagToBoard(newHashtagToBoardRelation),
     ]);
 
-    const post = await this.findOne(board.id);
-    const boardToCategoriesIds = post.boardToCategories.map((relation) => relation.id);
-    const hashtagToBoardsIds = post.hashtagToBoards.map((relation) => relation.id);
-    delete post.boardToCategories;
-    delete post.hashtagToBoards;
+    const foundBoard = await this.findOne(board.id);
+    const boardToCategoriesIds = foundBoard.boardToCategories.map((relation) => relation.id);
+    const hashtagToBoardsIds = foundBoard.hashtagToBoards.map((relation) => relation.id);
+    delete foundBoard.boardToCategories;
+    delete foundBoard.hashtagToBoards;
     return {
-      ...post,
+      ...foundBoard,
       boardToCategoriesIds,
       hashtagToBoardsIds,
     };
@@ -87,16 +87,15 @@ export class BoardService {
     await this.categoryService.findOne(id);
 
     const foundResult = await this.boardToCategoryService.findBoardByCategoryName(id);
-    const posts = foundResult.map((post) => {
-      const { id, name } = post.category;
-      delete post.category;
+    return foundResult.map((board) => {
+      const { id, name } = board.category;
+      delete board.category;
       return {
-        ...post,
+        ...board,
         categoryId: id,
         categoryName: name,
       };
     });
-    return posts;
   }
 
   async findBoardByHashtag(name: string) {
@@ -108,7 +107,7 @@ export class BoardService {
     await this.hashtagService.findOne(name);
 
     const result = await this.hashtagToBoardService.findBoardByHashtagName(name);
-    const posts = result.map((post) => {
+    return result.map((post) => {
       const { id, name } = post.hashtag;
       delete post.hashtag;
       return {
@@ -117,11 +116,10 @@ export class BoardService {
         hashtagName: name,
       };
     });
-    return posts;
   }
 
   async findOne(id: number) {
-    const foundPost = await this.boardRepository.findOne({
+    const foundBoard = await this.boardRepository.findOne({
       where: { id },
       relations: {
         boardToCategories: true,
@@ -130,20 +128,20 @@ export class BoardService {
       },
     });
 
-    if (!foundPost) {
+    if (!foundBoard) {
       throw new NotFoundException(`Could not find board by id : ${id}`);
     }
 
-    return foundPost;
+    return foundBoard;
   }
 
-  async update(id: number, updateRequestDto: UpdateBoardRequestDto): Promise<Board> {
-    const existingPost = await this.boardRepository.findOne({ where: { id } });
-    if (!existingPost) {
+  async update(id: number, updateBoardRequestDto: UpdateBoardRequestDto): Promise<Board> {
+    const existingBoard = await this.boardRepository.findOne({ where: { id } });
+    if (!existingBoard) {
       throw new NotFoundException(`Could not find board with id ${id}`);
     }
 
-    await this.boardRepository.update({ id: id }, updateRequestDto);
+    await this.boardRepository.update({ id: id }, updateBoardRequestDto);
     return this.boardRepository.findOne({ where: { id } });
   }
 

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { BoardService } from '../../application/services/board.service';
-import { CreatePostRequestDto } from '../../application/dto/createPost.request.dto';
+import { CreateBoardRequestDto } from '../../application/dto/createBoard.request.dto';
 import { UpdateBoardRequestDto } from '../../application/dto/updateBoard.request.dto';
 
 @Controller('boards')
@@ -9,8 +9,8 @@ export class BoardController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createPostRequestDto: CreatePostRequestDto) {
-    return this.boardService.create(createPostRequestDto);
+  create(@Body() createBoardRequestDto: CreateBoardRequestDto) {
+    return this.boardService.create(createBoardRequestDto);
   }
 
   @Get('category/:name')
